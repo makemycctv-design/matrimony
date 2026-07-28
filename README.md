@@ -215,8 +215,8 @@ routes/{web,auth,settings}.php
 | Phase | Scope |
 | --- | --- |
 | **1 — Foundation** ✅ | Setup, RBAC, auth, base data model, layouts, landing, admin/member dashboards, seeders |
-| 2 — Profiles | Profile wizard, KYC/verification, photo upload & moderation, privacy settings, admin profile management |
-| 3 — Discovery | Search, advanced filters, explainable match scoring, saved searches, recommendations, interests/shortlist/blocking/reports |
+| **2 — Profiles** ✅ | Profile wizard, KYC/verification, photo upload & moderation, privacy settings, admin profile management |
+| **3 — Discovery** ✅ | Search, advanced filters, explainable match scoring, saved searches, recommendations, interests/shortlist/blocking/reports |
 | 4 — Billing | Subscription plans, Razorpay checkout + webhooks, invoices/receipts, coupons, refunds, revenue analytics |
 | 5 — Comms & Ops | Notifications, optional messaging, admin reports/analytics, CMS/settings, REST API + docs, expanded tests, deployment configs |
 

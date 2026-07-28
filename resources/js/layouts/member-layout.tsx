@@ -10,6 +10,7 @@ import {
     Search,
     Settings,
     ShieldCheck,
+    SlidersHorizontal,
     Sparkles,
     Star,
     User as UserIcon,
@@ -55,6 +56,7 @@ export default function MemberLayout({ children, title }: MemberLayoutProps) {
         { title: t('nav.shortlist'), url: '/shortlist', icon: Star },
         { title: t('nav.messages'), url: '/messages', icon: MessageCircle },
         { title: t('nav.my_profile'), url: '/my-profile', icon: UserIcon },
+        { title: t('nav.partner_preferences'), url: '/partner-preferences', icon: SlidersHorizontal },
         { title: t('nav.privacy'), url: '/privacy', icon: ShieldCheck },
     ];
 

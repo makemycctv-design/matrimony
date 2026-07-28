@@ -71,6 +71,31 @@ export interface Preferences {
     [key: string]: string | boolean;
 }
 
+export interface MatchCard {
+    uuid: string;
+    profile_code: string | null;
+    display_name: string;
+    age: number | null;
+    height_cm: number | null;
+    gender: string | null;
+    religion: string | null;
+    mother_tongue: string | null;
+    profession: string | null;
+    education: string | null;
+    city: string | null;
+    state: string | null;
+    is_verified: boolean;
+    has_photo: boolean;
+    photo_url: string | null;
+    photo_locked: boolean;
+    last_active_at: string | null;
+    is_shortlisted: boolean;
+    interest_sent: string | null;
+    interest_received: string | null;
+    score: number | null;
+    reasons: string[] | null;
+}
+
 // Loosely typed bag of profile column values used to hydrate the wizard form.
 export type ProfileFields = Record<string, string | number | boolean | null | string[] | Record<string, unknown>>;
 

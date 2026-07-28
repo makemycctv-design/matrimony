@@ -96,6 +96,53 @@ class MemberProfile extends Model
         return $this->hasMany(ProfileVerification::class)->latest('id');
     }
 
+    public function partnerPreference(): HasOne
+    {
+        return $this->hasOne(PartnerPreference::class);
+    }
+
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
+
+    public function sentInterests(): HasMany
+    {
+        return $this->hasMany(Interest::class, 'sender_profile_id');
+    }
+
+    public function receivedInterests(): HasMany
+    {
+        return $this->hasMany(Interest::class, 'receiver_profile_id');
+    }
+
+    public function shortlists(): HasMany
+    {
+        return $this->hasMany(Shortlist::class, 'member_profile_id');
+    }
+
+    public function blocks(): HasMany
+    {
+        return $this->hasMany(BlockedProfile::class, 'member_profile_id');
+    }
+
+    /** IDs this profile has blocked, and IDs that have blocked this profile. */
+    public function blockedIds(): array
+    {
+        return BlockedProfile::query()
+            ->where('member_profile_id', $this->id)
+            ->pluck('blocked_profile_id')
+            ->all();
+    }
+
+    public function blockedByIds(): array
+    {
+        return BlockedProfile::query()
+            ->where('blocked_profile_id', $this->id)
+            ->pluck('member_profile_id')
+            ->all();
+    }
+
     public function religion(): BelongsTo
     {
         return $this->belongsTo(Religion::class);

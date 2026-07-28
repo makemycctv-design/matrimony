@@ -2,10 +2,16 @@
 
 namespace App\Providers;
 
+use App\Events\Interest\InterestAccepted;
+use App\Events\Interest\InterestDeclined;
+use App\Events\Interest\InterestReceived;
 use App\Events\Profile\ProfilePhotoModerated;
 use App\Events\Profile\ProfileRejected;
 use App\Events\Profile\ProfileVerified;
 use App\Listeners\RecordSuccessfulLogin;
+use App\Listeners\SendInterestAcceptedNotification;
+use App\Listeners\SendInterestDeclinedNotification;
+use App\Listeners\SendInterestReceivedNotification;
 use App\Listeners\SendPhotoModeratedNotification;
 use App\Listeners\SendProfileRejectedNotification;
 use App\Listeners\SendProfileVerifiedNotification;
@@ -68,5 +74,10 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(ProfileVerified::class, SendProfileVerifiedNotification::class);
         Event::listen(ProfileRejected::class, SendProfileRejectedNotification::class);
         Event::listen(ProfilePhotoModerated::class, SendPhotoModeratedNotification::class);
+
+        // Interest notifications.
+        Event::listen(InterestReceived::class, SendInterestReceivedNotification::class);
+        Event::listen(InterestAccepted::class, SendInterestAcceptedNotification::class);
+        Event::listen(InterestDeclined::class, SendInterestDeclinedNotification::class);
     }
 }

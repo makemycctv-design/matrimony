@@ -1,16 +1,27 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\MatchingSettingsController;
 use App\Http\Controllers\Admin\ProfileModerationController;
+use App\Http\Controllers\Admin\ReportModerationController;
 use App\Http\Controllers\Admin\VerificationQueueController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\Member\BlockController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\DocumentController;
+use App\Http\Controllers\Member\InterestController;
+use App\Http\Controllers\Member\MatchController;
+use App\Http\Controllers\Member\PartnerPreferenceController;
 use App\Http\Controllers\Member\PhotoController;
 use App\Http\Controllers\Member\PrivacyController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
+use App\Http\Controllers\Member\ProfileDetailController;
+use App\Http\Controllers\Member\ReportController;
+use App\Http\Controllers\Member\SavedSearchController;
+use App\Http\Controllers\Member\SearchController;
+use App\Http\Controllers\Member\ShortlistController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -51,17 +62,42 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('privacy', [PrivacyController::class, 'edit'])->name('member.privacy');
     Route::put('privacy', [PrivacyController::class, 'update'])->name('member.privacy.update');
 
+    // --- Discovery & matching ---
+    Route::get('search', [SearchController::class, 'index'])->name('member.search');
+    Route::get('matches', [MatchController::class, 'index'])->name('member.matches');
+    Route::get('profiles/{profile}', [ProfileDetailController::class, 'show'])->name('member.profiles.show');
+
+    // Partner preferences (drive recommendations + search defaults).
+    Route::get('partner-preferences', [PartnerPreferenceController::class, 'edit'])->name('member.partner.preferences');
+    Route::put('partner-preferences', [PartnerPreferenceController::class, 'update'])->name('member.partner.preferences.update');
+
+    // Saved searches.
+    Route::post('saved-searches', [SavedSearchController::class, 'store'])->name('member.saved-searches.store');
+    Route::delete('saved-searches/{savedSearch}', [SavedSearchController::class, 'destroy'])->name('member.saved-searches.destroy');
+
+    // --- Interests ---
+    Route::get('interests', [InterestController::class, 'index'])->name('member.interests');
+    Route::post('interests', [InterestController::class, 'store'])->name('member.interests.store');
+    Route::post('interests/{interest}/accept', [InterestController::class, 'accept'])->name('member.interests.accept');
+    Route::post('interests/{interest}/decline', [InterestController::class, 'decline'])->name('member.interests.decline');
+    Route::post('interests/{interest}/withdraw', [InterestController::class, 'withdraw'])->name('member.interests.withdraw');
+
+    // --- Shortlist / block / report ---
+    Route::get('shortlist', [ShortlistController::class, 'index'])->name('member.shortlist');
+    Route::post('shortlist/toggle', [ShortlistController::class, 'toggle'])->name('member.shortlist.toggle');
+
+    Route::get('blocked', [BlockController::class, 'index'])->name('member.blocked');
+    Route::post('blocked', [BlockController::class, 'store'])->name('member.blocked.store');
+    Route::delete('blocked/{profile}', [BlockController::class, 'destroy'])->name('member.blocked.destroy');
+
+    Route::post('reports', [ReportController::class, 'store'])->name('member.reports.store');
+
     /*
-     * Modules delivered in Phases 3-5 resolve to a clearly labelled
+     * Modules delivered in Phases 4-5 resolve to a clearly labelled
      * "arriving soon" section so the shell stays fully navigable.
      */
     $upcoming = [
-        'matches' => ['Match recommendations', 3],
-        'search' => ['Search & discovery', 3],
-        'interests' => ['Interests', 3],
-        'shortlist' => ['Shortlist', 3],
         'messages' => ['Messages', 5],
-        'partner-preferences' => ['Partner preferences', 3],
         'subscription' => ['Subscription & plans', 4],
         'notifications' => ['Notifications', 5],
     ];
@@ -95,6 +131,14 @@ Route::middleware(['auth', 'active', 'role:Super Admin|Platform Owner|Admin|Mode
         Route::get('verifications', [VerificationQueueController::class, 'index'])->name('verifications.index');
         Route::post('photos/{photo}/moderate', [VerificationQueueController::class, 'moderatePhoto'])->name('photos.moderate');
         Route::post('documents/{document}/review', [VerificationQueueController::class, 'reviewDocument'])->name('documents.review');
+
+        // Abuse report moderation.
+        Route::get('reports', [ReportModerationController::class, 'index'])->name('reports.index');
+        Route::post('reports/{report}', [ReportModerationController::class, 'update'])->name('reports.update');
+
+        // Matching configuration.
+        Route::get('matching', [MatchingSettingsController::class, 'edit'])->name('matching.edit');
+        Route::put('matching', [MatchingSettingsController::class, 'update'])->name('matching.update');
     });
 
 require __DIR__.'/settings.php';

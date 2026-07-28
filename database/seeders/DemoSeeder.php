@@ -124,6 +124,17 @@ class DemoSeeder extends Seeder
                 ->create();
 
             ProfilePreference::firstOrCreate(['member_profile_id' => $profile->id]);
+
+            // A basic partner preference so recommendations/matching are meaningful.
+            $pref = $profile->partnerPreference()->firstOrNew([]);
+            $pref->company_id = $company->id;
+            $pref->fill([
+                'preferred_gender' => $gender === Gender::Male ? 'female' : 'male',
+                'age_min' => 22,
+                'age_max' => 40,
+                'religion_ids' => [$religion?->id],
+                'mother_tongue_ids' => [$malayalam?->id],
+            ])->save();
         }
     }
 }

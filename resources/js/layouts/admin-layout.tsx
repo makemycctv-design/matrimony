@@ -12,6 +12,7 @@ import {
     Settings,
     ShieldAlert,
     ShieldCheck,
+    Sparkles,
     Ticket,
     Users,
 } from 'lucide-react';
@@ -82,6 +83,7 @@ export default function AdminLayout({ children, title, breadcrumbs }: AdminLayou
         {
             section: 'Platform',
             items: [
+                { title: 'Matching', url: '/admin/matching', icon: Sparkles, permission: 'matching.configure' },
                 { title: 'CMS pages', url: '/admin/cms', icon: FileText, permission: 'cms.manage' },
                 { title: 'Audit logs', url: '/admin/audit-logs', icon: FileText, permission: 'audit_logs.view' },
                 { title: 'Settings', url: '/admin/settings', icon: Settings, permission: 'settings.manage' },
