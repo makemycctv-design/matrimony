@@ -48,13 +48,13 @@ export default function MemberLayout({ children, title }: MemberLayoutProps) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const current = typeof window !== 'undefined' ? window.location.pathname : '';
 
-    const nav: { title: string; url: string; icon: LucideIcon }[] = [
+    const nav: { title: string; url: string; icon: LucideIcon; badge?: number }[] = [
         { title: t('nav.dashboard'), url: route('dashboard'), icon: LayoutDashboard },
         { title: t('nav.matches'), url: '/matches', icon: Sparkles },
         { title: t('nav.search'), url: '/search', icon: Search },
         { title: t('nav.interests'), url: '/interests', icon: Heart },
         { title: t('nav.shortlist'), url: '/shortlist', icon: Star },
-        { title: t('nav.messages'), url: '/messages', icon: MessageCircle },
+        { title: t('nav.messages'), url: '/messages', icon: MessageCircle, badge: auth.user?.unread_messages || undefined },
         { title: t('nav.my_profile'), url: '/my-profile', icon: UserIcon },
         { title: t('nav.partner_preferences'), url: '/partner-preferences', icon: SlidersHorizontal },
         { title: t('nav.privacy'), url: '/privacy', icon: ShieldCheck },
@@ -75,7 +75,10 @@ export default function MemberLayout({ children, title }: MemberLayoutProps) {
                         )}
                     >
                         <item.icon className="size-5" />
-                        {item.title}
+                        <span className="flex-1">{item.title}</span>
+                        {item.badge ? (
+                            <span className="bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 text-xs font-semibold">{item.badge}</span>
+                        ) : null}
                     </Link>
                 );
             })}
@@ -111,9 +114,12 @@ export default function MemberLayout({ children, title }: MemberLayoutProps) {
                     <div className="ml-auto flex items-center gap-1">
                         <LanguageSwitcher />
                         <ThemeToggle />
-                        <Button variant="ghost" size="icon" aria-label="Notifications" asChild>
+                        <Button variant="ghost" size="icon" aria-label="Notifications" className="relative" asChild>
                             <Link href="/notifications">
                                 <Bell className="size-5" />
+                                {(auth.user?.unread_notifications ?? 0) > 0 && (
+                                    <span className="bg-primary absolute top-1.5 right-1.5 flex size-2 rounded-full" />
+                                )}
                             </Link>
                         </Button>
 

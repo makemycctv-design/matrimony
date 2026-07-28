@@ -1,0 +1,56 @@
+# Local/production-like stack: app (nginx + php-fpm + queue + scheduler),
+# MySQL and Redis. For a pure local dev loop prefer `composer run dev`
+# (Vite + artisan serve) or Laravel Sail.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:80'
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_DATABASE: matrimony
+      DB_USERNAME: matrimony
+      DB_PASSWORD: secret
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - app_storage:/var/www/html/storage
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: matrimony
+      MYSQL_USER: matrimony
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-proot']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - '3306:3306'
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+volumes:
+  mysql_data:
+  app_storage:

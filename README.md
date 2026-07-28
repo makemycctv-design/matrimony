@@ -218,7 +218,18 @@ routes/{web,auth,settings}.php
 | **2 — Profiles** ✅ | Profile wizard, KYC/verification, photo upload & moderation, privacy settings, admin profile management |
 | **3 — Discovery** ✅ | Search, advanced filters, explainable match scoring, saved searches, recommendations, interests/shortlist/blocking/reports |
 | **4 — Billing** ✅ | Subscription plans, Razorpay checkout + webhooks (signature + idempotency), invoices/receipts, coupons, refunds, revenue analytics |
-| 5 — Comms & Ops | Notifications, optional messaging, admin reports/analytics, CMS/settings, REST API + docs, expanded tests, deployment configs |
+| **5 — Comms & Ops** ✅ | Notifications centre, messaging (post-mutual-interest), CMS/settings, REST API `/api/v1` + OpenAPI docs, CSV exports, deployment configs |
+
+All five phases are complete. See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup.
+
+## REST API
+
+A versioned, token-authenticated API (Laravel Sanctum) lives under `/api/v1`:
+
+- Interactive docs (Swagger UI): **`/api/docs`**
+- OpenAPI spec: **`/api/v1/openapi.json`**
+- Endpoints: auth (register/login/me/logout), profile, search, matches, profile detail, interests, plans, subscription, notifications
+- Standard JSON envelope `{ "data": ..., "meta"?: {...}, "message"?: "..." }`, rate limited, with strict throttling on auth
 
 ---
 

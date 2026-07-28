@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             MasterDataSeeder::class,
             SettingsSeeder::class,
             PlansSeeder::class,
+            CmsSeeder::class,
             DemoSeeder::class,
         ]);
     }

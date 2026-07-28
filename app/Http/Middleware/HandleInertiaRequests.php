@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\Messaging\MessageService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -78,6 +79,8 @@ class HandleInertiaRequests extends Middleware
             'is_staff' => $user->isStaff(),
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
+            'unread_notifications' => $user->unreadNotifications()->count(),
+            'unread_messages' => $this->unreadMessages($user),
             'profile' => $user->profile ? [
                 'uuid' => $user->profile->uuid,
                 'profile_code' => $user->profile->profile_code,
@@ -87,6 +90,15 @@ class HandleInertiaRequests extends Middleware
                 'is_verified' => $user->profile->is_verified,
             ] : null,
         ];
+    }
+
+    protected function unreadMessages(User $user): int
+    {
+        if ($user->profile === null) {
+            return 0;
+        }
+
+        return app(MessageService::class)->unreadCountFor($user->profile);
     }
 
     /**

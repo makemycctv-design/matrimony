@@ -23,6 +23,8 @@ export interface User {
     is_staff: boolean;
     roles: string[];
     permissions: string[];
+    unread_notifications: number;
+    unread_messages: number;
     profile: ProfileSummary | null;
     avatar?: string;
     [key: string]: unknown;

@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\CmsController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\MatchingSettingsController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
@@ -9,15 +11,20 @@ use App\Http\Controllers\Admin\ProfileModerationController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportModerationController;
 use App\Http\Controllers\Admin\RevenueController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\VerificationQueueController;
+use App\Http\Controllers\Api\ApiDocsController;
+use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\Member\BlockController;
+use App\Http\Controllers\Member\ConversationController;
 use App\Http\Controllers\Member\DashboardController as MemberDashboardController;
 use App\Http\Controllers\Member\DocumentController;
 use App\Http\Controllers\Member\InterestController;
 use App\Http\Controllers\Member\MatchController;
+use App\Http\Controllers\Member\NotificationController;
 use App\Http\Controllers\Member\PartnerPreferenceController;
 use App\Http\Controllers\Member\PaymentHistoryController;
 use App\Http\Controllers\Member\PhotoController;
@@ -32,12 +39,13 @@ use App\Http\Controllers\Member\SubscriptionController;
 use App\Http\Controllers\PricingController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 // --- Public ----------------------------------------------------------------
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('pricing', [PricingController::class, 'index'])->name('pricing');
+Route::get('pages/{slug}', [CmsPageController::class, 'show'])->name('cms.page');
+Route::get('api/docs', [ApiDocsController::class, 'ui'])->name('api.docs');
 
 Route::post('locale', [LocaleController::class, 'switch'])->name('locale.switch');
 
@@ -122,17 +130,18 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('billing/invoices/{invoice}', [PaymentHistoryController::class, 'invoice'])->name('member.billing.invoice');
     Route::post('billing/payments/{payment}/refund', [PaymentHistoryController::class, 'requestRefund'])->name('member.billing.refund');
 
-    $upcoming = [
-        'messages' => ['Messages', 5],
-        'notifications' => ['Notifications', 5],
-    ];
+    // --- Notifications centre ---
+    Route::get('notifications', [NotificationController::class, 'index'])->name('member.notifications');
+    Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('member.notifications.read-all');
+    Route::post('notifications/{id}/read', [NotificationController::class, 'markRead'])->name('member.notifications.read');
+    Route::delete('notifications/{id}', [NotificationController::class, 'destroy'])->name('member.notifications.destroy');
 
-    foreach ($upcoming as $path => [$label, $phase]) {
-        Route::get($path, fn () => Inertia::render('member/upcoming', [
-            'section' => $label,
-            'phase' => $phase,
-        ]))->name('member.'.str_replace('-', '.', $path));
-    }
+    // --- Messaging (only between connected members) ---
+    Route::get('messages', [ConversationController::class, 'index'])->name('member.messages');
+    Route::post('messages/start', [ConversationController::class, 'start'])->name('member.messages.start');
+    Route::get('messages/{conversation}', [ConversationController::class, 'show'])->name('member.messages.show');
+    Route::post('messages/{conversation}/send', [ConversationController::class, 'send'])->name('member.messages.send');
+    Route::post('messages/{message}/report', [ConversationController::class, 'report'])->name('member.messages.report');
 });
 
 // --- Admin console ----------------------------------------------------------
@@ -186,6 +195,19 @@ Route::middleware(['auth', 'active', 'role:Super Admin|Platform Owner|Admin|Mode
         Route::delete('coupons/{coupon}', [AdminCouponController::class, 'destroy'])->name('coupons.destroy');
 
         Route::get('revenue', [RevenueController::class, 'index'])->name('revenue.index');
+
+        // --- CMS + system settings ---
+        Route::get('cms', [CmsController::class, 'index'])->name('cms.index');
+        Route::post('cms', [CmsController::class, 'store'])->name('cms.store');
+        Route::put('cms/{cmsPage}', [CmsController::class, 'update'])->name('cms.update');
+        Route::delete('cms/{cmsPage}', [CmsController::class, 'destroy'])->name('cms.destroy');
+
+        Route::get('settings', [SettingsController::class, 'edit'])->name('settings.edit');
+        Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+
+        // --- Reports & exports ---
+        Route::get('exports/users', [ExportController::class, 'users'])->name('exports.users');
+        Route::get('exports/payments', [ExportController::class, 'payments'])->name('exports.payments');
     });
 
 require __DIR__.'/settings.php';

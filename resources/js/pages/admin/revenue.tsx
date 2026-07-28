@@ -1,7 +1,8 @@
 import { Head } from '@inertiajs/react';
-import { CreditCard, IndianRupee, RotateCcw, TrendingUp, Users, XCircle } from 'lucide-react';
+import { CreditCard, Download, IndianRupee, RotateCcw, TrendingUp, Users, XCircle } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdminLayout from '@/layouts/admin-layout';
 import { formatPaise } from '@/lib/format';
@@ -44,6 +45,19 @@ export default function Revenue({ metrics, trend, byPlan }: Props) {
             ]}
         >
             <Head title="Revenue analytics" />
+
+            <div className="mb-4 flex flex-wrap justify-end gap-2">
+                <Button variant="outline" size="sm" asChild>
+                    <a href={route('admin.exports.payments')}>
+                        <Download className="size-4" /> Export payments (CSV)
+                    </a>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                    <a href={route('admin.exports.users')}>
+                        <Download className="size-4" /> Export users (CSV)
+                    </a>
+                </Button>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {cards.map((c) => (
