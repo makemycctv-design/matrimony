@@ -6,6 +6,63 @@ background-worker configuration.
 
 ---
 
+## 0. This installation (matrimony.nokkoo.in)
+
+Quick-start for the current cPanel target. The document root is the project
+folder itself (`/home/uddjzwrz/matrimony.nokkoo.in`), so requests are forwarded
+into `public/` by the root `.htaccess` shipped with this repo — **or**, better,
+change the subdomain's document root in cPanel to
+`/home/uddjzwrz/matrimony.nokkoo.in/public`.
+
+```bash
+cd /home/uddjzwrz/matrimony.nokkoo.in
+git clone https://github.com/makemycctv-design/matrimony.git .
+
+cp .env.example .env
+# edit .env (see the values block below), then:
+php artisan key:generate
+bash deploy.sh                 # composer install + build + migrate + cache
+php artisan db:seed --force    # optional: roles/permissions, master data, plans, CMS, demo
+```
+
+`.env` values for this host (do **not** commit this file):
+
+```dotenv
+APP_NAME=Vivaaha
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://matrimony.nokkoo.in
+
+APP_LOCALE=en
+APP_SUPPORTED_LOCALES=en,ml
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=uddjzwrz_matrimony
+DB_USERNAME=uddjzwrz_matrimony
+DB_PASSWORD=your-db-password        # the password you created in cPanel
+
+SESSION_DRIVER=database
+SESSION_SECURE_COOKIE=true
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+
+MAIL_MAILER=smtp                    # configure your SMTP host
+RAZORPAY_ENABLED=false              # set true + keys when going live
+```
+
+cPanel cron (scheduler):
+
+```
+* * * * * cd /home/uddjzwrz/matrimony.nokkoo.in && php artisan schedule:run >> /dev/null 2>&1
+```
+
+If Node is not available on the host, run `npm ci && npm run build` locally and
+upload the generated `public/build` directory.
+
+---
+
 ## 1. Requirements
 
 - PHP **8.3+** with: `pdo_mysql, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, fileinfo, curl, gd, intl, zip`

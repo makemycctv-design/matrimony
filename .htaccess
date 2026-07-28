@@ -1,0 +1,20 @@
+# cPanel / shared-hosting fallback.
+#
+# The RECOMMENDED setup is to point the subdomain's document root at the
+# project's `public/` directory. If you cannot change the document root (it is
+# fixed to the project folder, e.g. /home/uddjzwrz/matrimony.nokkoo.in), this
+# rule transparently forwards every request into public/ where Laravel's own
+# public/.htaccess takes over.
+#
+# When the document root already points at public/, this file is never used.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS (recommended in production).
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Send everything into the public/ front controller.
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
