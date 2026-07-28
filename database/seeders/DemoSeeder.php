@@ -11,6 +11,7 @@ use App\Models\MotherTongue;
 use App\Models\ProfilePreference;
 use App\Models\Religion;
 use App\Models\User;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,7 +36,19 @@ class DemoSeeder extends Seeder
         );
 
         $this->staff($company);
-        $this->members($company);
+
+        // Demo member profiles are generated via model factories, which depend
+        // on fakerphp/faker (a dev-only dependency). On a production install
+        // (composer install --no-dev) faker is absent, so we skip them and keep
+        // the seeder green. Staff/admin accounts above always seed.
+        if (class_exists(Factory::class)) {
+            $this->members($company);
+        } else {
+            $this->command?->warn(
+                'Skipping demo member profiles: fakerphp/faker is not installed '
+                .'(expected on a production --no-dev install). Staff accounts were seeded.'
+            );
+        }
     }
 
     private function staff(Company $company): void
@@ -52,14 +65,20 @@ class DemoSeeder extends Seeder
             'marketing@example.com' => ['Marketing Lead', 'Marketing Staff'],
         ];
 
+        // Deterministic, unique mobile numbers so this runs without faker.
+        $sequence = 0;
+
         foreach ($staff as $email => [$name, $role]) {
+            $sequence++;
+            $mobile = '80'.str_pad((string) $sequence, 8, '0', STR_PAD_LEFT);
+
             $user = User::firstOrCreate(
                 ['email' => $email],
                 [
                     'company_id' => $company->id,
                     'name' => $name,
                     'country_code' => '+91',
-                    'mobile' => (string) fake()->unique()->numerify('80########'),
+                    'mobile' => $mobile,
                     'password' => Hash::make('password'),
                     'status' => UserStatus::Active,
                     'email_verified_at' => now(),
