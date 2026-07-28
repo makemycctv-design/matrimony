@@ -131,4 +131,23 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->mobile ? trim(($this->country_code ?? '').$this->mobile) : null;
     }
+
+    /** Get the member's profile, creating a draft (with default preferences) if absent. */
+    public function ensureProfile(): MemberProfile
+    {
+        // Query fresh (not the possibly-stale cached relation) so repeated calls
+        // on the same instance never create a duplicate profile.
+        $profile = $this->profile()->first();
+
+        if ($profile === null) {
+            $profile = new MemberProfile(['first_name' => explode(' ', $this->name)[0]]);
+            $profile->company_id = $this->company_id;
+            $this->profile()->save($profile);
+            $profile->preferences()->create();
+        }
+
+        $this->setRelation('profile', $profile);
+
+        return $profile;
+    }
 }

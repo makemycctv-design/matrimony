@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -73,6 +74,26 @@ class MemberProfile extends Model
     public function preferences(): HasOne
     {
         return $this->hasOne(ProfilePreference::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ProfilePhoto::class)->orderBy('sort_order');
+    }
+
+    public function primaryPhoto(): HasOne
+    {
+        return $this->hasOne(ProfilePhoto::class)->where('is_primary', true);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ProfileDocument::class)->latest('id');
+    }
+
+    public function verifications(): HasMany
+    {
+        return $this->hasMany(ProfileVerification::class)->latest('id');
     }
 
     public function religion(): BelongsTo

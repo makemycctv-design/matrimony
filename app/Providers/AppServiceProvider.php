@@ -2,7 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\Profile\ProfilePhotoModerated;
+use App\Events\Profile\ProfileRejected;
+use App\Events\Profile\ProfileVerified;
 use App\Listeners\RecordSuccessfulLogin;
+use App\Listeners\SendPhotoModeratedNotification;
+use App\Listeners\SendProfileRejectedNotification;
+use App\Listeners\SendProfileVerifiedNotification;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
 use App\Support\Tenancy\TenantManager;
@@ -57,5 +63,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Record device/login history on every successful authentication.
         Event::listen(Login::class, RecordSuccessfulLogin::class);
+
+        // Verification & moderation notifications.
+        Event::listen(ProfileVerified::class, SendProfileVerifiedNotification::class);
+        Event::listen(ProfileRejected::class, SendProfileRejectedNotification::class);
+        Event::listen(ProfilePhotoModerated::class, SendPhotoModeratedNotification::class);
     }
 }

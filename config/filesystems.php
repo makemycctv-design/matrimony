@@ -37,6 +37,16 @@ return [
             'throw' => false,
         ],
 
+        // Sensitive member media (photos + KYC documents). Never publicly
+        // served; access only through authorized controllers / signed URLs.
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/secure'),
+            'serve' => false,
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
