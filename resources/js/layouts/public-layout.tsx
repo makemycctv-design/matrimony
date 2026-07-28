@@ -16,7 +16,7 @@ export default function PublicLayout({ children }: PropsWithChildren) {
 
     const links = [
         { label: t('nav.how_it_works'), href: '/#how-it-works' },
-        { label: t('nav.pricing'), href: '/#pricing' },
+        { label: t('nav.pricing'), href: route('pricing') },
         { label: t('nav.success_stories'), href: '/#stories' },
         { label: t('nav.about'), href: '/#about' },
     ];

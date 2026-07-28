@@ -9,6 +9,7 @@ import {
     LogOut,
     type LucideIcon,
     Menu,
+    RotateCcw,
     Settings,
     ShieldAlert,
     ShieldCheck,
@@ -77,7 +78,9 @@ export default function AdminLayout({ children, title, breadcrumbs }: AdminLayou
             items: [
                 { title: 'Plans', url: '/admin/plans', icon: CreditCard, permission: 'plans.manage' },
                 { title: 'Payments', url: '/admin/payments', icon: BarChart3, permission: 'payments.view' },
+                { title: 'Refunds', url: '/admin/refunds', icon: RotateCcw, permission: 'refunds.view' },
                 { title: 'Coupons', url: '/admin/coupons', icon: Ticket, permission: 'coupons.view' },
+                { title: 'Revenue', url: '/admin/revenue', icon: BarChart3, permission: 'reports.view' },
             ],
         },
         {

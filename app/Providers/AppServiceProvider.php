@@ -15,6 +15,9 @@ use App\Listeners\SendInterestReceivedNotification;
 use App\Listeners\SendPhotoModeratedNotification;
 use App\Listeners\SendProfileRejectedNotification;
 use App\Listeners\SendProfileVerifiedNotification;
+use App\Services\Payments\FakePaymentGateway;
+use App\Services\Payments\PaymentGateway;
+use App\Services\Payments\RazorpayGateway;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
 use App\Support\Tenancy\TenantManager;
@@ -38,6 +41,20 @@ class AppServiceProvider extends ServiceProvider
                 // Additional provider drivers are wired up in later phases.
                 default => new LogSmsSender,
             };
+        });
+
+        // Payment gateway: live Razorpay when configured, otherwise a safe fake.
+        $this->app->singleton(PaymentGateway::class, function () {
+            $cfg = config('services.razorpay');
+
+            if (! empty($cfg['enabled']) && ! empty($cfg['key']) && ! empty($cfg['secret'])) {
+                return new RazorpayGateway($cfg['key'], $cfg['secret'], $cfg['webhook_secret'] ?? null);
+            }
+
+            return new FakePaymentGateway(
+                $cfg['secret'] ?: 'fake_secret',
+                $cfg['webhook_secret'] ?: 'fake_webhook_secret',
+            );
         });
     }
 

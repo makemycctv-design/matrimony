@@ -100,6 +100,27 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(AccountDeletionRequest::class);
     }
 
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /** The member's currently usable subscription, if any. */
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()->active()->latest('ends_at')->first();
+    }
+
+    public function isPremium(): bool
+    {
+        return $this->activeSubscription() !== null || $this->hasRole('Premium Member');
+    }
+
     // --- Helpers ------------------------------------------------------------
 
     public function isMobileVerified(): bool

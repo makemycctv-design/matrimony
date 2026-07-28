@@ -35,4 +35,24 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Razorpay
+    |--------------------------------------------------------------------------
+    |
+    | Server-side payment gateway credentials. The secret and webhook secret
+    | are NEVER exposed to the frontend — only the public key id is shared with
+    | Razorpay Checkout. When keys are absent the platform falls back to a safe
+    | fake gateway (local/dev/CI) so nothing leaves the system.
+    |
+    */
+
+    'razorpay' => [
+        'enabled' => env('RAZORPAY_ENABLED', filled(env('RAZORPAY_KEY'))),
+        'key' => env('RAZORPAY_KEY'),
+        'secret' => env('RAZORPAY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+        'gst_percent' => (float) env('RAZORPAY_GST_PERCENT', 18),
+    ],
+
 ];

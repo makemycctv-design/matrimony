@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\MatchingSettingsController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Admin\ProfileModerationController;
+use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportModerationController;
+use App\Http\Controllers\Admin\RevenueController;
 use App\Http\Controllers\Admin\VerificationQueueController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
@@ -14,6 +19,7 @@ use App\Http\Controllers\Member\DocumentController;
 use App\Http\Controllers\Member\InterestController;
 use App\Http\Controllers\Member\MatchController;
 use App\Http\Controllers\Member\PartnerPreferenceController;
+use App\Http\Controllers\Member\PaymentHistoryController;
 use App\Http\Controllers\Member\PhotoController;
 use App\Http\Controllers\Member\PrivacyController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
@@ -22,14 +28,21 @@ use App\Http\Controllers\Member\ReportController;
 use App\Http\Controllers\Member\SavedSearchController;
 use App\Http\Controllers\Member\SearchController;
 use App\Http\Controllers\Member\ShortlistController;
+use App\Http\Controllers\Member\SubscriptionController;
+use App\Http\Controllers\PricingController;
+use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // --- Public ----------------------------------------------------------------
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('pricing', [PricingController::class, 'index'])->name('pricing');
 
 Route::post('locale', [LocaleController::class, 'switch'])->name('locale.switch');
+
+// Razorpay webhook — public, no CSRF (excluded in bootstrap/app.php), signature-verified.
+Route::post('webhooks/razorpay', [WebhookController::class, 'razorpay'])->name('webhooks.razorpay');
 
 // --- Member area -----------------------------------------------------------
 // `active` blocks suspended/deactivated accounts mid-session.
@@ -96,9 +109,21 @@ Route::middleware(['auth', 'active'])->group(function () {
      * Modules delivered in Phases 4-5 resolve to a clearly labelled
      * "arriving soon" section so the shell stays fully navigable.
      */
+    // --- Billing & subscriptions ---
+    Route::get('subscription', [SubscriptionController::class, 'index'])->name('member.subscription');
+    Route::post('subscription/checkout', [SubscriptionController::class, 'checkout'])->name('member.subscription.checkout');
+    Route::post('subscription/verify', [SubscriptionController::class, 'verify'])->name('member.subscription.verify');
+    Route::post('subscription/simulate/{payment}', [SubscriptionController::class, 'simulate'])->name('member.subscription.simulate');
+    Route::get('subscription/success/{payment}', [SubscriptionController::class, 'success'])->name('member.subscription.success');
+    Route::match(['get', 'post'], 'subscription/failed/{payment}', [SubscriptionController::class, 'failed'])->name('member.subscription.failed');
+    Route::post('subscription/cancel', [SubscriptionController::class, 'cancel'])->name('member.subscription.cancel');
+
+    Route::get('billing/history', [PaymentHistoryController::class, 'index'])->name('member.billing.history');
+    Route::get('billing/invoices/{invoice}', [PaymentHistoryController::class, 'invoice'])->name('member.billing.invoice');
+    Route::post('billing/payments/{payment}/refund', [PaymentHistoryController::class, 'requestRefund'])->name('member.billing.refund');
+
     $upcoming = [
         'messages' => ['Messages', 5],
-        'subscription' => ['Subscription & plans', 4],
         'notifications' => ['Notifications', 5],
     ];
 
@@ -139,6 +164,28 @@ Route::middleware(['auth', 'active', 'role:Super Admin|Platform Owner|Admin|Mode
         // Matching configuration.
         Route::get('matching', [MatchingSettingsController::class, 'edit'])->name('matching.edit');
         Route::put('matching', [MatchingSettingsController::class, 'update'])->name('matching.update');
+
+        // --- Billing ---
+        Route::get('plans', [AdminPlanController::class, 'index'])->name('plans.index');
+        Route::post('plans', [AdminPlanController::class, 'store'])->name('plans.store');
+        Route::put('plans/{plan}', [AdminPlanController::class, 'update'])->name('plans.update');
+        Route::delete('plans/{plan}', [AdminPlanController::class, 'destroy'])->name('plans.destroy');
+
+        Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+        Route::get('payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
+
+        Route::get('refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
+        Route::post('payments/{payment}/refund', [AdminRefundController::class, 'store'])->name('payments.refund');
+        Route::post('refunds/{refund}/approve', [AdminRefundController::class, 'approve'])->name('refunds.approve');
+        Route::post('refunds/{refund}/reject', [AdminRefundController::class, 'reject'])->name('refunds.reject');
+        Route::post('refunds/{refund}/process', [AdminRefundController::class, 'process'])->name('refunds.process');
+
+        Route::get('coupons', [AdminCouponController::class, 'index'])->name('coupons.index');
+        Route::post('coupons', [AdminCouponController::class, 'store'])->name('coupons.store');
+        Route::put('coupons/{coupon}', [AdminCouponController::class, 'update'])->name('coupons.update');
+        Route::delete('coupons/{coupon}', [AdminCouponController::class, 'destroy'])->name('coupons.destroy');
+
+        Route::get('revenue', [RevenueController::class, 'index'])->name('revenue.index');
     });
 
 require __DIR__.'/settings.php';

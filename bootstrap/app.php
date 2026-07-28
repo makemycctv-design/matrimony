@@ -30,6 +30,11 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureFrontendRequestsAreStateful::class,
         ]);
 
+        // Payment provider webhooks are authenticated by signature, not CSRF.
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/*',
+        ]);
+
         $middleware->alias([
             'active' => EnsureAccountIsActive::class,
             'role' => RoleMiddleware::class,
