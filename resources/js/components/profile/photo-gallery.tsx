@@ -1,6 +1,6 @@
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { ImagePlus, Loader2, Star, Trash2 } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,21 +17,32 @@ const STATUS_STYLES: Record<Photo['status'], string> = {
 
 export default function PhotoGallery({ photos }: { photos: Photo[] }) {
     const fileInput = useRef<HTMLInputElement>(null);
-    const { setData, post, processing, reset, errors } = useForm<{ photo: File | null }>({ photo: null });
+    const [processing, setProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const onFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setData('photo', file);
-        post(route('member.photos.store'), {
-            forceFormData: true,
-            preserveScroll: true,
-            onFinish: () => {
-                reset('photo');
-                if (fileInput.current) fileInput.current.value = '';
+        setError(null);
+
+        // Submit the file directly with router.post so we never depend on
+        // asynchronous form state. Inertia converts the File to multipart
+        // form-data automatically (forceFormData keeps it explicit).
+        router.post(
+            route('member.photos.store'),
+            { photo: file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onStart: () => setProcessing(true),
+                onError: (errors) => setError(errors.photo ?? 'Upload failed. Please try again.'),
+                onFinish: () => {
+                    setProcessing(false);
+                    if (fileInput.current) fileInput.current.value = '';
+                },
             },
-        });
+        );
     };
 
     const setPrimary = (photo: Photo) => router.post(route('member.photos.primary', { photo: photo.uuid }), {}, { preserveScroll: true });
@@ -52,7 +63,7 @@ export default function PhotoGallery({ photos }: { photos: Photo[] }) {
                 <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onFileSelected} />
             </div>
 
-            {errors.photo && <p className="text-destructive text-sm">{errors.photo}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             {photos.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-12 text-center">
